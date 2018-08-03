@@ -29,23 +29,35 @@ router.use(function (req, res, next) {
 // routes that end in /users
 router.route('/users')
     .post(function(req, res) {
-          
+          console.log('user post recieved');
           var user = new User();
           user.name = req.body.name;
+          console.log(user.name);
           
           user.save(function(err) {
-              if (err)
+              console.log('start to save');
+              if (err){
                   res.send(err);
-              
+              }
               res.json({message: 'User created.' });
           });
-});
+         res.json({message: 'Too Far'})
+    })
+    
+    .get(function(req, res){
+        User.find(function(err, users) {
+            if (err)
+                res.send(err);
+            
+            res.json(users);
+        });
+    });
 // Test to make sure everything is working
 
 // Accessing at GET http://localhost:8080/api
-router.get('/', function(req, res) {
-    res.json({ message: 'We did it. API is go.' });
-});
+//router.get('/', function(req, res) {
+//    res.json({ message: 'We did it. API is go.' });
+//});
 
 
 // Register our routes
