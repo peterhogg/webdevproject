@@ -5,8 +5,14 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+// Register models
+var User = require("./models/User");
+
 var index = require('./routes/index');
 var users = require('./routes/users');
+
+var mongoose   = require('mongoose');
+mongoose.connect('mongodb://localhost:27017/webdevproject');
 
 var app = express();
 
