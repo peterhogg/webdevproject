@@ -11,7 +11,7 @@ var User = require('./app/models/user');
 // configuring the app to use the bodyParser()
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-mongoose.connect('localhost:27017');
+mongoose.connect('mongoDB://localhost:27017/UsersDB');
 
 var port = process.env.PORT || 8080; //Setting the port
 
@@ -29,19 +29,16 @@ router.use(function (req, res, next) {
 // routes that end in /users
 router.route('/users')
     .post(function(req, res) {
-          console.log('user post recieved');
           var user = new User();
           user.name = req.body.name;
-          console.log(user.name);
           
-          user.save(function(err) {
-              console.log('start to save');
-              if (err){
-                  res.send(err);
-              }
-              res.json({message: 'User created.' });
+          user.save()
+          .then(function(user) {
+              res.json({message: 'User created.'});
+          })
+          .catch(function(error){
+              res.send(error);
           });
-         res.json({message: 'Too Far'})
     })
     
     .get(function(req, res){
@@ -52,12 +49,49 @@ router.route('/users')
             res.json(users);
         });
     });
+
+router.route('/users/:user_id')
+
+    .get(function(req, res) {
+        User.findById(req.params.user_id, function(err, user) {
+            if (err)
+                res.send(err);
+            res.json(user);
+        });
+    })
+    
+    .put(function(req,res){
+         User.findById(req.params.user_id, function(err, user){
+             if (err)
+                 res.send(err);
+             
+             user.name = req.body.name;
+             
+             user.save()
+                .then(function(user){
+                 res.json({message: 'User updated!'});
+             })
+             .catch(function(error){
+                 res.send(error);
+             });
+        });
+    })
+    .delete(function(req, res) {
+        User.remove({
+            _id: req.params.user_id
+        }, function(err, user) {
+            if (err)
+                res.send(err);
+            
+            res.json({message: 'Successfully deleted user.'});
+        })
+    });
 // Test to make sure everything is working
 
 // Accessing at GET http://localhost:8080/api
-//router.get('/', function(req, res) {
-//    res.json({ message: 'We did it. API is go.' });
-//});
+router.get('/', function(req, res) {
+    res.json({ message: 'We did it. API is go.' });
+});
 
 
 // Register our routes
