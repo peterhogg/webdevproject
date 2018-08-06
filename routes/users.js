@@ -4,27 +4,65 @@ var mongoose = require('mongoose');
 
 var User = mongoose.model('User');
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  User.find({})
-    .then(users => {
-      res.send(users);
+// routes that end in /users
+router.route('/')
+    .post(function(req, res) {
+          var user = new User();
+          user.name = req.body.name;
+          
+          user.save()
+          .then(function(user) {
+              res.json({message: 'User created.'});
+          })
+          .catch(function(error){
+              res.send(error);
+          });
     })
-});
+    
+    .get(function(req, res){
+        User.find(function(err, users) {
+            if (err)
+                res.send(err);
+            
+            res.json(users);
+        });
+    });
 
-router.post("/", function(req,res){
-  user = new User({
-    "name" : req.body.name,
-    "email": req.body.email
-  });
-  user.save()
-  .then((user) => {
-    res.json(user).status(200);
-  })
-  .catch((error)=>{
-    console.log(error);
-    res.send(error).status(500);
-  })
-})
+router.route('/:user_id')
+
+    .get(function(req, res) {
+        User.findById(req.params.user_id, function(err, user) {
+            if (err)
+                res.send(err);
+            res.json(user);
+        });
+    })
+    
+    .put(function(req,res){
+         User.findById(req.params.user_id, function(err, user){
+             if (err)
+                 res.send(err);
+             
+             user.name = req.body.name;
+             
+             user.save()
+                .then(function(user){
+                 res.json({message: 'User updated!'});
+             })
+             .catch(function(error){
+                 res.send(error);
+             });
+        });
+    })
+    .delete(function(req, res) {
+        User.remove({
+            _id: req.params.user_id
+        }, function(err, user) {
+            if (err)
+                res.send(err);
+            
+            res.json({message: 'Successfully deleted user.'});
+        });
+    });
 
 module.exports = router;
